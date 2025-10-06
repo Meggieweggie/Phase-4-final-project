@@ -1,4 +1,48 @@
-.App {
+body {
+  background: #d1f7ff;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.app {
   text-align: center;
-  padding: 20px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.board-container {
+  display: flex;
+  justify-content: center;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 60px);
+  grid-template-rows: repeat(10, 60px);
+  gap: 2px;
+  background-color: #444;
+  border: 5px solid #333;
+}
+
+.square {
+  background: #fff;
+  border: 1px solid #999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.square:nth-child(odd) {
+  background-color: #b2dfdb;
+}
+
+.square:nth-child(even) {
+  background-color: #80cbc4;
 }
