@@ -1,0 +1,8 @@
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #999;
+  font-size: 14px;
+  background: linear-gradient(135deg, #fff, #ddd);
+}

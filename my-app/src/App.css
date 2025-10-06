@@ -1,48 +1,52 @@
-body {
-  background: #d1f7ff;
-  font-family: 'Poppins', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.app {
-  text-align: center;
-}
-
-h1 {
-  color: #333;
-  margin-bottom: 20px;
-}
-
 .board-container {
-  display: flex;
-  justify-content: center;
+  text-align: center;
+  margin-top: 20px;
 }
 
 .board {
   display: grid;
-  grid-template-columns: repeat(10, 60px);
-  grid-template-rows: repeat(10, 60px);
+  grid-template-columns: repeat(10, 50px);
+  grid-template-rows: repeat(10, 50px);
   gap: 2px;
-  background-color: #444;
-  border: 5px solid #333;
+  margin: 0 auto;
+  position: relative;
+  width: 520px;
+  height: 520px;
+  border: 3px solid #444;
+  background: linear-gradient(135deg, #f8f8f8, #ddd);
 }
 
-.square {
-  background: #fff;
-  border: 1px solid #999;
+.tile {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   font-weight: bold;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  font-size: 12px;
 }
 
-.square:nth-child(odd) {
-  background-color: #b2dfdb;
+/* Snake and ladder visuals */
+.snake, .ladder, .token {
+  position: absolute;
 }
 
-.square:nth-child(even) {
-  background-color: #80cbc4;
+.snake1 {
+  top: 100px;
+  left: 150px;
+  width: 120px;
+  transform: rotate(30deg);
+}
+
+.ladder1 {
+  top: 300px;
+  left: 320px;
+  width: 100px;
+  transform: rotate(-20deg);
+}
+
+.token {
+  top: 470px;
+  left: 10px;
+  width: 35px;
 }

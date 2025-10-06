@@ -1,69 +1,105 @@
 .board-container {
   text-align: center;
-  background-color: #f4f4f4;
-  padding: 20px;
+  margin-top: 30px;
+  font-family: Arial, sans-serif;
 }
 
 .board {
   display: grid;
-  grid-template-columns: repeat(10, 40px);
-  grid-template-rows: repeat(10, 40px);
-  gap: 2px;
-  margin: 20px auto;
-  width: max-content;
-  border: 4px solid #333;
-}
-
-.square {
-  width: 40px;
-  height: 40px;
-  background-color: #d4f1f4;
-  border: 1px solid #333;
-  font-size: 10px;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+  border: 5px solid #333;
   position: relative;
+  background-color: #fafafa;
 }
 
-.square:nth-child(even) {
-  background-color: #a9def9;
-}
-
-.players {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
+.cell {
   display: flex;
-  gap: 2px;
-}
-
-.token {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  font-size: 8px;
-  color: white;
-  display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 1px solid #ccc;
 }
 
-.token1 {
+.cell:nth-child(odd) {
+  background-color: #e8e8e8;
+}
+
+/*  Ladders */
+.ladder {
+  position: absolute;
+  width: 6px;
+  background-color: #d4a017;
+  border: 1px solid #8b5a2b;
+  z-index: 2;
+}
+
+.ladder::before,
+.ladder::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 2px;
+  background-color: #8b5a2b;
+  left: -12px;
+}
+
+.ladder1 {
+  height: 120px;
+  top: 330px;
+  left: 80px;
+  transform: rotate(-25deg);
+}
+
+.ladder2 {
+  height: 140px;
+  top: 180px;
+  left: 360px;
+  transform: rotate(30deg);
+}
+
+/*  Snakes */
+.snake {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+  background: radial-gradient(circle at 30% 30%, #32cd32, #006400);
+}
+
+.snake1 {
+  width: 100px;
+  height: 100px;
+  top: 70px;
+  left: 130px;
+  transform: rotate(30deg);
+  animation: move 3s infinite ease-in-out;
+}
+
+.snake2 {
+  width: 120px;
+  height: 120px;
+  top: 280px;
+  left: 260px;
+  transform: rotate(-40deg);
+  animation: move 2.5s infinite ease-in-out;
+}
+
+@keyframes move {
+  0%, 100% { transform: rotate(30deg); }
+  50% { transform: rotate(40deg); }
+}
+
+/*  Token */
+.token {
+  position: absolute;
+  width: 18px;
+  height: 18px;
   background-color: red;
-}
-
-.token2 {
-  background-color: blue;
-}
-
-.controls button {
-  padding: 8px 16px;
-  margin-top: 10px;
-  background-color: #333;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.controls p {
-  font-weight: bold;
+  border-radius: 50%;
+  border: 2px solid black;
+  top: 470px;
+  left: 20px;
 }
