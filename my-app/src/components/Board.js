@@ -1,8 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 function Board() {
   const canvasRef = useRef(null);
   const boxSize = 60;
+  const [dice, setDice] = useState("-");
+  const [turn, setTurn] = useState("Player 1");
+  const [playerPos, setPlayerPos] = useState({ p1: 1, p2: 1 });
 
   function getPosition(num) {
     const row = Math.floor((num - 1) / 10);
@@ -13,6 +16,15 @@ function Board() {
       : col * boxSize + boxSize / 2;
     const y = (9 - row) * boxSize + boxSize / 2;
     return { x, y };
+  }
+
+  function drawPlayer(ctx, pos, color) {
+    const { x, y } = getPosition(pos);
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.stroke();
   }
 
   useEffect(() => {
@@ -42,7 +54,7 @@ function Board() {
     const ladders = [
       { from: 46, to: 69 },
       { from: 6, to: 25 },
-      { from: 11, to: 33},
+      { from: 11, to: 33 },
       { from: 36, to: 44 },
       { from: 63, to: 81 },
     ];
@@ -88,7 +100,29 @@ function Board() {
         ctx.stroke();
       }
     });
-  }, []);
+
+    drawPlayer(ctx, playerPos.p1, "blue");
+    drawPlayer(ctx, playerPos.p2, "red");
+  }, [playerPos]);
+
+  function rollDice() {
+    const roll = Math.floor(Math.random() * 6) + 1;
+    setDice(roll);
+
+    if (turn === "Player 1") {
+      setPlayerPos((prev) => ({
+        ...prev,
+        p1: Math.min(prev.p1 + roll, 100),
+      }));
+      setTurn("Player 2");
+    } else {
+      setPlayerPos((prev) => ({
+        ...prev,
+        p2: Math.min(prev.p2 + roll, 100),
+      }));
+      setTurn("Player 1");
+    }
+  }
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -102,6 +136,28 @@ function Board() {
           backgroundColor: "#fff",
         }}
       ></canvas>
+
+      <div style={{ marginTop: "20px" }}>
+        <p>
+          <strong>Turn:</strong> {turn}
+        </p>
+        <button
+          onClick={rollDice}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Roll Dice
+        </button>
+        <p>
+          <strong>Dice Result:</strong> {dice}
+        </p>
+      </div>
     </div>
   );
 }
