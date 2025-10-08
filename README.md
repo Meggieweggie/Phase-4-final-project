@@ -10,7 +10,7 @@ Classic board game with React frontend and Flask backend.
 - Player piece positioning
 - Responsive grid design
 
-### Login and Logout Portal
+### Login and Logout Portal ###
 - User authentication interface
 - Username input form
 - Session management
