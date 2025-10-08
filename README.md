@@ -52,7 +52,7 @@ npm install
 npm start
 ```
 
-## Game Rules
+## Game RulesM ##
 
 - Two players take turns
 - Roll dice (1-6) to move
