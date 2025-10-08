@@ -5,13 +5,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# In-memory storage (in production, use a database)
+
 games = {}
 
-# Standard board configuration (100 squares)
+
 BOARD_SIZE = 100
 
-# Standard snakes and ladders configuration
+
 SNAKES = {
     16: 6,
     47: 26,
@@ -62,24 +62,24 @@ class Game:
         current_position = self.players[player_name]
         new_position = current_position + dice_value
         
-        # Check if player reached exactly 100
+
         if new_position > BOARD_SIZE:
-            # Player doesn't move if they overshoot
+
             new_position = current_position
         elif new_position == BOARD_SIZE:
-            # Player wins
+
             self.winner = player_name
         else:
-            # Check for snakes
+
             if new_position in SNAKES:
                 new_position = SNAKES[new_position]
-            # Check for ladders
+
             elif new_position in LADDERS:
                 new_position = LADDERS[new_position]
         
         self.players[player_name] = new_position
         
-        # Record the move
+
         move = {
             "player": player_name,
             "dice": dice_value,
@@ -89,7 +89,7 @@ class Game:
         }
         self.moves.append(move)
         
-        # Move to next player if game isn't won
+
         if not self.winner:
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
         
@@ -121,7 +121,7 @@ def create_game():
     if len(players) > 6:
         return jsonify({"error": "Maximum 6 players allowed"}), 400
     
-    # Check for duplicate player names
+
     if len(players) != len(set(players)):
         return jsonify({"error": "Player names must be unique"}), 400
     
@@ -162,10 +162,10 @@ def roll_dice(game_id):
     game = games[game_id]
     current_player = game.get_current_player()
     
-    # Roll the dice
+
     dice_value = game.roll_dice()
     
-    # Move the player
+
     result = game.move_player(current_player, dice_value)
     
     if "error" in result:
@@ -199,10 +199,10 @@ def list_games():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     
-    # Get all game IDs
+
     game_ids = list(games.keys())
     
-    # Paginate
+
     start = (page - 1) * per_page
     end = start + per_page
     paginated_ids = game_ids[start:end]
