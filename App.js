@@ -1,18 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import * as api from './api';
+import './App.css';
 
-function useGameState() {
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
+  const [username, setUsername] = useState('');
+  
   const [players, setPlayers] = useState([
     { id: 1, name: 'Player 1', position: 0 },
     { id: 2, name: 'Player 2', position: 0 }
   ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [gameMessage, setGameMessage] = useState('Click Roll Dice to start!');
+  const [gameMessage, setGameMessage] = useState('Welcome! Please login to start playing.');
   const [diceValue, setDiceValue] = useState(1);
   const [isRolling, setIsRolling] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const [winner, setWinner] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('snakesUser');
+    if (savedUser) {
+      setCurrentUser(savedUser);
+      setIsLoggedIn(true);
+      setGameMessage(`Welcome back, ${savedUser}! Ready to play?`);
+    }
+  }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username.trim()) {
+      setCurrentUser(username.trim());
+      setIsLoggedIn(true);
+      localStorage.setItem('snakesUser', username.trim());
+      setGameMessage(`Welcome ${username.trim()}! Click Roll Dice to start playing.`);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser('');
+    setIsLoggedIn(false);
+    setUsername('');
+    localStorage.removeItem('snakesUser');
+    resetGame();
+    setGameMessage('Thanks for playing! Please login to play again.');
+  };
 
   const resetGame = () => {
     setPlayers([
@@ -20,7 +53,7 @@ function useGameState() {
       { id: 2, name: 'Player 2', position: 0 }
     ]);
     setCurrentPlayerIndex(0);
-    setGameMessage('Game reset! Click Roll Dice to start.');
+    setGameMessage('New game started! Click Roll Dice to begin.');
     setDiceValue(1);
     setIsRolling(false);
     setGameWon(false);
@@ -101,30 +134,156 @@ function useGameState() {
     setGameHistory(prev => [...prev.slice(-9), move]);
   };
 
-  return {
-    players,
-    currentPlayerIndex,
-    gameMessage,
-    diceValue,
-    isRolling,
-    gameWon,
-    winner,
-    gameHistory,
-    rollDice,
-    resetGame
-  };
+  if (!isLoggedIn) {
+    return (
+      <div className="login-container">
+        <div className="login-card">
+          <div className="game-logo">
+            <h1>Snakes & Ladders</h1>
+            <p>Classic Board Game</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="input-group">
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="username-input"
+                required
+              />
+            </div>
+            
+            <button type="submit" className="login-btn">
+              Start Playing
+            </button>
+          </form>
+          
+          <div className="game-preview">
+            <div className="preview-board">
+              {[...Array(25)].map((_, i) => (
+                <div key={i} className="preview-square"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="game-app">
+      <header className="game-header">
+        <h1>Snakes & Ladders</h1>
+        <div className="user-info">
+          <span>Welcome, {currentUser}!</span>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div className="game-container">
+        <div className="game-panel">
+          <div className="players-section">
+            <h3>Players</h3>
+            {players.map((player, index) => (
+              <div 
+                key={player.id} 
+                className={`player-card ${index === currentPlayerIndex ? 'active' : ''}`}
+              >
+                <div className="player-info">
+                  <span className="player-name">{player.name}</span>
+                  <span className="player-position">Position: {player.position}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="game-status">
+            <p>{gameMessage}</p>
+          </div>
+
+          <div className="dice-section">
+            <div className="dice-display">
+              <div className={`dice ${isRolling ? 'rolling' : ''}`}>
+                {diceValue}
+              </div>
+            </div>
+            
+            <button
+              onClick={rollDice}
+              disabled={isRolling || gameWon}
+              className="roll-btn"
+            >
+              {isRolling ? 'Rolling...' : 'Roll Dice'}
+            </button>
+            
+            <button onClick={resetGame} className="reset-btn">
+              New Game
+            </button>
+          </div>
+
+          {gameHistory.length > 0 && (
+            <div className="game-history">
+              <h4>Game History</h4>
+              <div className="history-list">
+                {gameHistory.map((move, index) => (
+                  <div key={index} className="history-item">{move}</div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="board-section">
+          <GameBoard players={players} />
+        </div>
+      </div>
+
+      {gameWon && (
+        <div className="winner-modal">
+          <div className="modal-content">
+            <h2>Game Over!</h2>
+            <h3>{winner} Wins!</h3>
+            <button onClick={resetGame} className="play-again-btn">
+              Play Again
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function GameStateManager() {
-  const gameState = useGameState();
-  
-  return {
-    ...gameState,
-    getCurrentPlayer: () => gameState.players[gameState.currentPlayerIndex],
-    getPlayerPositions: () => gameState.players.map(p => ({ name: p.name, position: p.position })),
-    isGameActive: () => !gameState.gameWon,
-    canRoll: () => !gameState.isRolling && !gameState.gameWon
+function GameBoard({ players }) {
+  const createBoard = () => {
+    const squares = [];
+    for (let i = 100; i >= 1; i--) {
+      const playersOnSquare = players.filter(p => p.position === i);
+      
+      squares.push(
+        <div key={i} className="board-square">
+          <span className="square-number">{i}</span>
+          {playersOnSquare.map((player, index) => (
+            <div
+              key={player.id}
+              className={`player-piece player-${player.id}`}
+              style={{ top: `${5 + index * 15}px` }}
+            />
+          ))}
+        </div>
+      );
+    }
+    return squares;
   };
+
+  return (
+    <div className="game-board">
+      {createBoard()}
+    </div>
+  );
 }
 
-export default GameStateManager;
+export default App;
