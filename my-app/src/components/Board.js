@@ -7,7 +7,7 @@ function Board() {
   const [turn, setTurn] = useState("Player 1");
   const [playerPos, setPlayerPos] = useState({ p1: 1, p2: 1 });
 
-  // 🔹 Use useCallback so React recognizes drawPlayer as a stable dependency
+
   const getPosition = useCallback((num) => {
     const row = Math.floor((num - 1) / 10);
     const col = (num - 1) % 10;
@@ -35,7 +35,7 @@ function Board() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // Draw the board grid
+
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
         const x = col * boxSize;
@@ -49,7 +49,7 @@ function Board() {
       }
     }
 
-    // Draw snakes
+
     const snakes = [
       { from: 65, to: 83 },
       { from: 70, to: 55 },
@@ -57,7 +57,7 @@ function Board() {
       { from: 36, to: 5 },
     ];
 
-    // Draw ladders
+
     const ladders = [
       { from: 46, to: 69 },
       { from: 6, to: 25 },
@@ -108,7 +108,7 @@ function Board() {
       }
     });
 
-    // Draw players
+
     drawPlayer(ctx, playerPos.p1, "blue");
     drawPlayer(ctx, playerPos.p2, "red");
   }, [playerPos, drawPlayer, boxSize, getPosition]);
