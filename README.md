@@ -38,7 +38,7 @@ Classic board game with React frontend and Flask backend.
 - CORS configuration
 - Snake and ladder mappings
 
-## Setup
+## Setup ##
 
 ### Backend
 ```bash
