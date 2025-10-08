@@ -1,11 +1,17 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
-function Board() {
+function Board({ players, onGameEnd }) {
   const canvasRef = useRef(null);
   const boxSize = 60;
   const [dice, setDice] = useState("-");
-  const [turn, setTurn] = useState("Player 1");
+  const [turn, setTurn] = useState(1);
   const [playerPos, setPlayerPos] = useState({ p1: 1, p2: 1 });
+  const [gameMessage, setGameMessage] = useState("");
+  const [winner, setWinner] = useState(null);
+
+  // Snake and ladder mappings matching backend
+  const snakes = {16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78};
+  const ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80: 100};
 
 
   const getPosition = useCallback((num) => {
@@ -50,25 +56,10 @@ function Board() {
     }
 
 
-    const snakes = [
-      { from: 65, to: 83 },
-      { from: 70, to: 55 },
-      { from: 45, to: 19 },
-      { from: 36, to: 5 },
-    ];
-
-
-    const ladders = [
-      { from: 46, to: 69 },
-      { from: 6, to: 25 },
-      { from: 11, to: 33 },
-      { from: 36, to: 44 },
-      { from: 63, to: 81 },
-    ];
-
-    snakes.forEach((snake) => {
-      const start = getPosition(snake.from);
-      const end = getPosition(snake.to);
+    // Draw snakes
+    Object.entries(snakes).forEach(([from, to]) => {
+      const start = getPosition(parseInt(from));
+      const end = getPosition(parseInt(to));
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
       ctx.quadraticCurveTo(
@@ -77,14 +68,15 @@ function Board() {
         end.x,
         end.y
       );
-      ctx.strokeStyle = "green";
+      ctx.strokeStyle = "red";
       ctx.lineWidth = 4;
       ctx.stroke();
     });
 
-    ladders.forEach((ladder) => {
-      const start = getPosition(ladder.from);
-      const end = getPosition(ladder.to);
+    // Draw ladders
+    Object.entries(ladders).forEach(([from, to]) => {
+      const start = getPosition(parseInt(from));
+      const end = getPosition(parseInt(to));
 
       ctx.strokeStyle = "#8B4513";
       ctx.lineWidth = 3;
@@ -111,26 +103,58 @@ function Board() {
 
     drawPlayer(ctx, playerPos.p1, "blue");
     drawPlayer(ctx, playerPos.p2, "red");
-  }, [playerPos, drawPlayer, boxSize, getPosition]);
+  }, [playerPos, drawPlayer, boxSize, getPosition, snakes, ladders]);
 
-  function rollDice() {
+  const checkPosition = (position) => {
+    if (snakes[position]) {
+      setGameMessage(`Snake! Slide down to ${snakes[position]}`);
+      return snakes[position];
+    } else if (ladders[position]) {
+      setGameMessage(`Ladder! Climb up to ${ladders[position]}`);
+      return ladders[position];
+    } else {
+      setGameMessage(`Safe at ${position}`);
+      return position;
+    }
+  };
+
+  const rollDice = async () => {
+    if (winner) return;
+    
     const roll = Math.floor(Math.random() * 6) + 1;
     setDice(roll);
 
-    if (turn === "Player 1") {
-      setPlayerPos((prev) => ({
-        ...prev,
-        p1: Math.min(prev.p1 + roll, 100),
-      }));
-      setTurn("Player 2");
-    } else {
-      setPlayerPos((prev) => ({
-        ...prev,
-        p2: Math.min(prev.p2 + roll, 100),
-      }));
-      setTurn("Player 1");
+    const currentPlayer = turn === 1 ? 'p1' : 'p2';
+    const currentPos = playerPos[currentPlayer];
+    let newPos = currentPos + roll;
+    
+    // Can't go beyond 100
+    if (newPos > 100) {
+      setGameMessage(`Need exactly ${100 - currentPos} to win!`);
+      setTurn(turn === 1 ? 2 : 1);
+      return;
     }
-  }
+    
+    // Check for snakes and ladders
+    const finalPos = checkPosition(newPos);
+    
+    setPlayerPos(prev => ({
+      ...prev,
+      [currentPlayer]: finalPos
+    }));
+    
+    // Check win condition
+    if (finalPos >= 100) {
+      const winnerName = turn === 1 ? players.player1 : players.player2;
+      setWinner(winnerName);
+      setGameMessage(`🎉 ${winnerName} wins!`);
+      if (onGameEnd) onGameEnd(winnerName);
+      return;
+    }
+    
+    // Switch turn
+    setTurn(turn === 1 ? 2 : 1);
+  };
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -146,25 +170,44 @@ function Board() {
       ></canvas>
 
       <div style={{ marginTop: "20px" }}>
-        <p>
-          <strong>Turn:</strong> {turn}
-        </p>
+        <div style={{ marginBottom: "10px" }}>
+          <p><strong>{players.player1}:</strong> Position {playerPos.p1}</p>
+          <p><strong>{players.player2}:</strong> Position {playerPos.p2}</p>
+        </div>
+        <p><strong>Current Turn:</strong> {turn === 1 ? players.player1 : players.player2}</p>
         <button
           onClick={rollDice}
+          disabled={winner}
           style={{
             padding: "10px 20px",
-            backgroundColor: "#4CAF50",
+            backgroundColor: winner ? "#ccc" : "#4CAF50",
             color: "white",
             border: "none",
             borderRadius: "6px",
-            cursor: "pointer",
+            cursor: winner ? "not-allowed" : "pointer",
           }}
         >
-          Roll Dice
+          {winner ? "Game Over" : "Roll Dice"}
         </button>
-        <p>
-          <strong>Dice Result:</strong> {dice}
-        </p>
+        <p><strong>Dice Result:</strong> {dice}</p>
+        {gameMessage && <p style={{ color: "#333", fontWeight: "bold" }}>{gameMessage}</p>}
+        {winner && (
+          <div style={{ marginTop: "20px" }}>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#2196F3",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            >
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
