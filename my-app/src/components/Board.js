@@ -31,13 +31,21 @@ function Board() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
         const x = col * boxSize;
         const y = row * boxSize;
         ctx.fillStyle = (row + col) % 2 === 0 ? "#FFF8DC" : "#F5DEB3";
         ctx.fillRect(x, y, boxSize, boxSize);
-        const num = 100 - (row * 10 + (9 - col));
+        let num;
+        if (row % 2 === 0) {
+          num = 100 - (row * 10) - col;
+        } else {
+          num = 100 - (row * 10) - (9 - col);
+        }
+        if (num < 1) num = 1;
         ctx.fillStyle = "#333";
         ctx.font = "12px Arial";
         ctx.fillText(num, x + 5, y + 15);
@@ -45,10 +53,10 @@ function Board() {
     }
 
     const snakes = [
-      { from: 65, to: 83 },
-      { from: 70, to: 55 },
-      { from: 45, to: 19 },
-      { from: 36, to: 5 },
+      { from: 83, to: 65 },
+      { from: 55, to: 70 },
+      { from: 19, to: 45 },
+      { from: 5, to: 36 },
     ];
 
     const ladders = [
@@ -105,22 +113,31 @@ function Board() {
     drawPlayer(ctx, playerPos.p2, "red");
   }, [playerPos]);
 
+  function checkSnakesAndLadders(position) {
+    const snakeMap = { 83: 65, 55: 70, 19: 45, 5: 36 };
+    const ladderMap = { 69: 46, 25: 6, 33: 11, 44: 36, 81: 63 };
+    
+    if (snakeMap[position]) return snakeMap[position];
+    if (ladderMap[position]) return ladderMap[position];
+    return position;
+  }
+
   function rollDice() {
+    if (playerPos.p1 >= 100 || playerPos.p2 >= 100) return;
+    
     const roll = Math.floor(Math.random() * 6) + 1;
     setDice(roll);
 
     if (turn === "Player 1") {
-      setPlayerPos((prev) => ({
-        ...prev,
-        p1: Math.min(prev.p1 + roll, 100),
-      }));
-      setTurn("Player 2");
+      const newPos = Math.min(playerPos.p1 + roll, 100);
+      const finalPos = checkSnakesAndLadders(newPos);
+      setPlayerPos((prev) => ({ ...prev, p1: finalPos }));
+      if (finalPos < 100) setTurn("Player 2");
     } else {
-      setPlayerPos((prev) => ({
-        ...prev,
-        p2: Math.min(prev.p2 + roll, 100),
-      }));
-      setTurn("Player 1");
+      const newPos = Math.min(playerPos.p2 + roll, 100);
+      const finalPos = checkSnakesAndLadders(newPos);
+      setPlayerPos((prev) => ({ ...prev, p2: finalPos }));
+      if (finalPos < 100) setTurn("Player 1");
     }
   }
 
@@ -137,26 +154,57 @@ function Board() {
         }}
       ></canvas>
 
-      <div style={{ marginTop: "20px" }}>
-        <p>
+      <div style={{ marginTop: "20px", background: 'rgba(255,255,255,0.9)', padding: '20px', borderRadius: '15px', margin: '20px auto', maxWidth: '400px' }}>
+        <p style={{ fontSize: '18px', marginBottom: '15px' }}>
           <strong>Turn:</strong> {turn}
+        </p>
+        <p style={{ fontSize: '16px', marginBottom: '15px' }}>
+          <strong>Player 1 Position:</strong> {playerPos.p1} | <strong>Player 2 Position:</strong> {playerPos.p2}
         </p>
         <button
           onClick={rollDice}
+          disabled={playerPos.p1 >= 100 || playerPos.p2 >= 100}
           style={{
-            padding: "10px 20px",
-            backgroundColor: "#4CAF50",
+            padding: "15px 30px",
+            background: (playerPos.p1 >= 100 || playerPos.p2 >= 100) ? "#ccc" : "linear-gradient(135deg, #4CAF50, #45a049)",
             color: "white",
             border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
+            borderRadius: "25px",
+            cursor: (playerPos.p1 >= 100 || playerPos.p2 >= 100) ? "not-allowed" : "pointer",
+            fontSize: "16px",
+            fontWeight: "bold",
+            marginBottom: "15px"
           }}
         >
           Roll Dice
         </button>
-        <p>
+        <p style={{ fontSize: '18px', fontWeight: 'bold' }}>
           <strong>Dice Result:</strong> {dice}
         </p>
+        {(playerPos.p1 >= 100 || playerPos.p2 >= 100) && (
+          <div style={{ marginTop: '20px', padding: '15px', background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)', color: 'white', borderRadius: '15px' }}>
+            <h3>{playerPos.p1 >= 100 ? 'Player 1 Wins!' : 'Player 2 Wins!'}</h3>
+            <button
+              onClick={() => {
+                setPlayerPos({ p1: 1, p2: 1 });
+                setTurn('Player 1');
+                setDice('-');
+              }}
+              style={{
+                padding: '10px 20px',
+                background: 'white',
+                color: '#333',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginTop: '10px'
+              }}
+            >
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
