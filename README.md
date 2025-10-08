@@ -1,4 +1,4 @@
-# Snakes and Ladders Game
+# Snakes and Ladders Game 
 
 Classic board game with React frontend and Flask backend.
 
