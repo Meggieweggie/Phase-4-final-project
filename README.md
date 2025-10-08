@@ -4,7 +4,7 @@ Classic board game with React frontend and Flask backend.
 
 ## Team Responsibilities ##
 
-### Gameboard & Visual Design
+### Gameboard & Visual Design ##
 - 10x10 game board layout
 - Snake and ladder visual elements
 - Player piece positioning
